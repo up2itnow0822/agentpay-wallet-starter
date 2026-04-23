@@ -24,6 +24,8 @@ This starter repo is now strong enough for internal review and external packagin
 
 - local git repo initialized on `main`
 - initial commit: `0451f10` (`feat: scaffold agentpay wallet starter`)
+- remote repo created: `https://github.com/up2itnow0822/agentpay-wallet-starter`
+- remote visibility: `public`
 
 ## Publish rule
 

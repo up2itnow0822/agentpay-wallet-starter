@@ -19,11 +19,17 @@
 
 ## After push
 
-- [ ] confirm GitHub repo description
-- [ ] confirm topics
+- [x] confirm GitHub repo description
+- [x] confirm topics
 - [ ] confirm README renders correctly
-- [ ] confirm default branch is `main`
+- [x] confirm default branch is `main`
 - [ ] decide whether to add a repo social preview image later
+
+## Live repo
+
+- URL: `https://github.com/up2itnow0822/agentpay-wallet-starter`
+- visibility: `public`
+- default branch: `main`
 
 ## First external truth rule
 
