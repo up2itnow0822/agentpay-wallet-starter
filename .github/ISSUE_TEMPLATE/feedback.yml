@@ -1,0 +1,87 @@
+name: Starter feedback
+
+description: Tell us what you would change first in agentpay-wallet-starter.
+
+title: "Feedback: "
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for trying `agentpay-wallet-starter`.
+
+        The most useful feedback is concrete:
+        - what you changed first
+        - where you got stuck
+        - which client surface or endpoint you wanted next
+
+  - type: dropdown
+    id: starting_point
+    attributes:
+      label: Where did you start?
+      options:
+        - Controlled paid-tool example
+        - Policy example
+        - Claude setup docs
+        - Cursor setup docs
+        - OpenClaw setup docs
+        - Coding-agent bridge
+        - Bring-your-own-endpoint lane
+        - README only
+    validations:
+      required: true
+
+  - type: dropdown
+    id: first_change
+    attributes:
+      label: What would you change first?
+      options:
+        - Policy threshold
+        - Endpoint
+        - Client surface
+        - Wallet limits
+        - Proof path order
+        - Coding-agent bridge
+        - Documentation wording
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_goal
+    attributes:
+      label: What are you trying to do?
+      description: Name the real flow you want to run.
+      placeholder: I want to swap in my own payment-required endpoint and keep one blocked path for review.
+    validations:
+      required: true
+
+  - type: input
+    id: target_surface
+    attributes:
+      label: Which client or surface matters most?
+      description: Claude, Cursor, OpenClaw, your own app, or another surface.
+      placeholder: OpenClaw
+
+  - type: textarea
+    id: confusion_point
+    attributes:
+      label: What was unclear or missing?
+      placeholder: I could not tell whether I should start with the MCP server or the controlled paid-tool example.
+    validations:
+      required: true
+
+  - type: textarea
+    id: next_needed
+    attributes:
+      label: What would help next?
+      placeholder: One example that swaps the endpoint without changing the rest of the proof path.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or repro notes
+      description: Paste the command, file, screenshot, or behavior you hit.
+      placeholder: bash scripts/verify-starter.sh passed, then I got stuck choosing between Claude setup and the MCP bridge.

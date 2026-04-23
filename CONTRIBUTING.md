@@ -37,3 +37,12 @@ If you change the controlled paid-tool example, keep the three required outcomes
 - explain whether the change affects the first proof path or a secondary lane
 - include the verification command you ran
 - avoid broad product claims that are not proven in this repo yet
+
+## Feedback handling
+
+Use the starter feedback issue template for new repo feedback when possible.
+
+When replying, optimize for concrete adaptation signals:
+- what the user changed first
+- what was unclear
+- whether they were blocked on endpoint swapping, client setup, or policy limits
