@@ -13,12 +13,17 @@ This starter repo is now strong enough for internal review and external packagin
 - repo-level `LICENSE` and `CONTRIBUTING.md` now exist
 - `scripts/verify-starter.sh` passes
 - `scripts/export-check.sh` exists
+- standalone git history is initialized in this repo copy
 
 ## Still worth cleaning before public export
 
 - decide whether the repo name stays `agentpay-wallet-starter` or gets a more explicit public name
 - decide whether the coding-agent bridge stays OpenAI-specific or expands to multiple clients later
-- decide whether to initialize a standalone git history for export from this workspace copy
+
+## Local repo checkpoint
+
+- local git repo initialized on `main`
+- initial commit: `0451f10` (`feat: scaffold agentpay wallet starter`)
 
 ## Publish rule
 
