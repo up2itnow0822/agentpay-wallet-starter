@@ -109,4 +109,6 @@ It is this:
 - `docs/client-setup-claude.md`
 - `docs/client-setup-cursor.md`
 - `docs/client-setup-openclaw.md`
+- `docs/github-metadata.md`
+- `docs/remote-publish-checklist.md`
 - `examples/bring-your-own-endpoint/README.md`
