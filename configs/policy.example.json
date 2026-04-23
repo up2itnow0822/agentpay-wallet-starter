@@ -1,0 +1,5 @@
+{
+  "allowedTools": ["premium_weather_signal"],
+  "approvalThresholdUsd": 0.25,
+  "hardCapUsd": 1.0
+}

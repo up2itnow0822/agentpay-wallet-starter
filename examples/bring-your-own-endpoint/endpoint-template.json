@@ -1,0 +1,16 @@
+{
+  "endpointName": "replace-me",
+  "goal": "Describe the paid action you want the client to perform.",
+  "allowedCase": {
+    "amountUsd": 0.1,
+    "input": {
+      "query": "replace me"
+    }
+  },
+  "approvalOrBlockedCase": {
+    "amountUsd": 5,
+    "input": {
+      "query": "replace me"
+    }
+  }
+}

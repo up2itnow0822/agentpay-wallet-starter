@@ -1,0 +1,39 @@
+{
+  "tool": {
+    "name": "premium_weather_signal",
+    "vendor": "simulated-paid-tool",
+    "currency": "USD",
+    "challengeScheme": "simulated-x402"
+  },
+  "policy": {
+    "allowedTools": ["premium_weather_signal"],
+    "approvalThresholdUsd": 0.25,
+    "hardCapUsd": 1.0
+  },
+  "scenarios": {
+    "allowed": {
+      "amountUsd": 0.18,
+      "goal": "Fetch a premium severe-weather signal for a single farm before sending the morning plan.",
+      "toolInput": {
+        "location": "Des Moines, IA",
+        "window": "next 6 hours"
+      }
+    },
+    "approval": {
+      "amountUsd": 0.65,
+      "goal": "Fetch a premium multi-zone severe-weather signal for logistics planning.",
+      "toolInput": {
+        "location": "Kansas City, MO",
+        "window": "next 24 hours"
+      }
+    },
+    "blocked": {
+      "amountUsd": 1.25,
+      "goal": "Fetch the premium enterprise severe-weather signal pack for a regional operation.",
+      "toolInput": {
+        "location": "Dallas-Fort Worth, TX",
+        "window": "next 72 hours"
+      }
+    }
+  }
+}

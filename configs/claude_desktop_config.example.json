@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "agentpay": {
+      "command": "npx",
+      "args": ["-y", "agentpay-mcp"]
+    }
+  }
+}

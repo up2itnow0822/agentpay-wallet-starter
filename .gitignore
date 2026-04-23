@@ -1,0 +1,4 @@
+node_modules/
+examples/controlled-paid-tool/artifacts/
+.DS_Store
+.env

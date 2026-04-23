@@ -1,0 +1,20 @@
+{
+  "name": "agentpay-wallet-starter",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Starter repo for AgentPay MCP plus Agent Wallet SDK",
+  "license": "MIT",
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "verify": "bash scripts/verify-starter.sh",
+    "verify:starter": "bash scripts/verify-starter.sh",
+    "export:check": "bash scripts/export-check.sh",
+    "demo:allowed": "node examples/controlled-paid-tool/run_demo.js allowed",
+    "demo:approval": "NEMOCLAW_AUTO_APPROVE=yes node examples/controlled-paid-tool/run_demo.js approval",
+    "demo:blocked": "node examples/controlled-paid-tool/run_demo.js blocked",
+    "demo:validate": "node examples/controlled-paid-tool/validate_demo.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
