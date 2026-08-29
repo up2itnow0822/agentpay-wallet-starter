@@ -5,6 +5,7 @@
   "description": "Starter repo for AgentPay MCP plus Agent Wallet SDK",
   "license": "MIT",
   "scripts": {
+    "test": "bash scripts/verify-starter.sh",
     "setup": "bash scripts/setup.sh",
     "verify": "bash scripts/verify-starter.sh",
     "verify:starter": "bash scripts/verify-starter.sh",
