@@ -42,7 +42,7 @@ It also includes two next lanes:
 ```bash
 git clone https://github.com/up2itnow0822/agentpay-wallet-starter.git
 cd agentpay-wallet-starter
-npm install
+npm ci
 npm test
 ```
 
