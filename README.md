@@ -8,8 +8,8 @@ together in one real paid-tool flow.
 Use this repo when you want the fastest path to first success with both pieces
 of the stack:
 
-- `agentwallet-sdk` handles wallet custody, spend controls, and x402 payment
-  logic
+- `agentwallet-sdk` handles spend controls and x402 payment logic. It is
+  non-custodial: you supply your own signer, and the SDK does not store keys
 - `agentpay-mcp` exposes that capability to Claude, Cursor, OpenClaw, Codex, and
   other MCP clients
 - this repo gives you the shortest path to run them together, then adapt the
@@ -68,8 +68,8 @@ Then adapt the path:
 
 This stack has three layers.
 
-- `agentwallet-sdk` is the engine. It owns wallet operations, spend limits, and
-  x402 payment logic.
+- `agentwallet-sdk` is the engine. It provides wallet operations, spend limits,
+  and x402 payment logic. Keys stay with you; the SDK is non-custodial.
 - `agentpay-mcp` is the MCP server. It exposes that engine to agent clients
   through MCP tools.
 - `agentpay-wallet-starter` is the onboarding lane. It shows how to run both
