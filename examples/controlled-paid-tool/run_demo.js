@@ -6,6 +6,7 @@ const { evaluatePayment, formatUsd } = require('./lib/policy');
 const { requestApproval } = require('./lib/approval');
 const { appendAuditEvent, writeRunSummary, ensureDir } = require('./lib/audit');
 const { requestPaidTool, settlePayment, deliverToolResult } = require('./lib/paid-tool-simulator');
+const { checkPayGuard, combinePolicyDecisions } = require('./lib/payguard');
 
 function parseArgs(argv) {
   const parsed = {
@@ -80,15 +81,28 @@ async function main() {
     challenge,
   });
 
-  const policyDecision = evaluatePayment(
+  const localPolicyDecision = evaluatePayment(
     { toolName: challenge.toolName, amountUsd: challenge.amountUsd },
     config.policy
   );
+  let externalPolicyDecision = null;
+  if (process.env.PAYGUARD_CLIENT_TOKEN && localPolicyDecision.decision !== 'blocked') {
+    externalPolicyDecision = await checkPayGuard({
+      challenge,
+      goal: scenario.goal,
+      token: process.env.PAYGUARD_CLIENT_TOKEN,
+      endpoint: process.env.PAYGUARD_ENDPOINT,
+      baseUrl: process.env.PAYGUARD_BASE_URL,
+    });
+  }
+  const policyDecision = combinePolicyDecisions(localPolicyDecision, externalPolicyDecision);
   console.log(`[2/5] Policy decision: ${policyDecision.decision}. ${policyDecision.reason}`);
   appendAuditEvent(args.auditDir, {
     runId,
     eventType: 'policy.evaluated',
     policy: config.policy,
+    localDecision: localPolicyDecision,
+    externalDecision: externalPolicyDecision,
     decision: policyDecision,
   });
 
@@ -178,6 +192,8 @@ async function main() {
     toolInput: scenario.toolInput,
     policy: config.policy,
     challenge,
+    localPolicyDecision,
+    externalPolicyDecision,
     policyDecision,
     approvalDecision,
     paymentReceipt,

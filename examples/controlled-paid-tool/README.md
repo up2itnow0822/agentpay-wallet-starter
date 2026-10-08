@@ -43,6 +43,27 @@ Or run the deterministic validation pass:
 node examples/controlled-paid-tool/validate_demo.js
 ```
 
+## Optional independent pre-settlement check
+
+The default demo remains local and unchanged. To compose its existing spend limits with an independent authorization service, provide a client token and the exact paid endpoint:
+
+```sh
+PAYGUARD_CLIENT_TOKEN=... PAYGUARD_ENDPOINT=https://example.com/paid-tool \
+node examples/controlled-paid-tool/run_demo.js allowed
+```
+
+The extra check runs after the simulated payment challenge and before approval or `settlePayment()`. A PayGuard `BLOCK`, timeout, malformed response, unsupported decision, expired receipt or receipt mismatch fails closed. `REQUIRE_APPROVAL` enters the existing human-approval path. PayGuard receives no wallet key and cannot sign or settle the payment.
+
+Run the focused network-free tests with:
+
+```bash
+node --test examples/controlled-paid-tool/lib/payguard.test.js
+```
+
+The public service and a no-funds evaluator are documented at:
+
+https://github.com/mercadosclaro-eng/ai-payment-control-plane/tree/main/integrations/evaluation
+
 ## What you should see
 
 ### Allowed path
