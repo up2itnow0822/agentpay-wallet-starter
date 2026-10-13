@@ -1,49 +1,46 @@
 # Cursor setup
 
-Use this after the controlled paid-tool example works.
+Run root `npm test` first. Then install and verify the guarded MCP bridge:
 
-## Goal
+```bash
+cd examples/coding-agent-bridge
+npm ci --ignore-scripts
+npm run typecheck
+npm test
+npm run smoke
+```
 
-Connect Cursor to `agentpay-mcp` with the same low-risk starter policy.
-
-## Start from
-
-- `configs/cursor_mcp.example.json`
-
-## What to change
-
-Start with the command shape as written:
+Use Node.js 22.12+. Copy `configs/cursor_mcp.example.json` into your
+Cursor MCP configuration and replace the absolute path placeholder with your
+checkout's `gateway.mjs` path. Use an absolute Node executable path as well if
+your client cannot find `node` in PATH.
 
 ```json
 {
   "mcpServers": {
     "agentpay": {
-      "command": "npx",
-      "args": ["-y", "agentpay-mcp"]
+      "command": "node",
+      "args": [
+        "/ABSOLUTE/PATH/agentpay-wallet-starter/examples/coding-agent-bridge/gateway.mjs"
+      ]
     }
   }
 }
 ```
 
-Use `configs/policy.example.json` as your starter guardrail model.
+The gateway defaults to a no-funds mock. It exposes only `get_wallet_info` and
+`x402_pay`, with exact endpoint and payee allowlists, caps and a persistent local
+budget. Ask for a simulated request to `https://merchant.example/paid-weather`
+with `max_payment_eth` set to `"0.18"`; then verify that an unknown endpoint or
+`"0.65"` request is blocked. The stdio gateway denies above-threshold payments
+because model messages cannot supply human approval.
 
-Important: this policy file shape is validated in the controlled paid-tool demo in this repo. It is not yet documented here as a direct runtime env contract for the current `agentpay-mcp` server.
+For any live use, follow the separate operator checkpoint and environment
+contract in [the bridge README](../examples/coding-agent-bridge/README.md).
+Replace the mock merchant/payee and review wallet limits first. Do not put keys
+in tracked client configs. All clients using the same live wallet must share the
+persistent audit/budget directory.
 
-## Recommended order
-
-1. Verify the starter lane locally first.
-2. Review `configs/policy.example.json` so your allow, approve, and block boundaries are explicit.
-3. Add the MCP server to Cursor with tiny wallet limits.
-4. Test one paid action that should pass.
-5. Test one action that should block or require approval.
-6. Record what you changed before raising limits.
-
-## What success looks like
-
-- Cursor can reach the MCP server
-- the policy boundary stays intact
-- you can adapt the endpoint or spend rule without losing track of the SDK versus MCP boundary
-
-## Common mistake
-
-Do not start by raising limits. Start by proving the reject path still works.
+`configs/policy.example.json` belongs to the USD simulator and is consumed only
+with its `--policy` flag. The bridge uses its own `policy.example.json` shape and
+USDC strings; client registration alone does not configure payment policy.

@@ -1,48 +1,46 @@
 # Claude Desktop setup
 
-Use this after the controlled paid-tool example works.
+Run root `npm test` first. Then install and verify the guarded MCP bridge:
 
-## Goal
+```bash
+cd examples/coding-agent-bridge
+npm ci --ignore-scripts
+npm run typecheck
+npm test
+npm run smoke
+```
 
-Connect Claude Desktop to `agentpay-mcp` with a clear policy path.
-
-## Start from
-
-- `configs/claude_desktop_config.example.json`
-
-## What to change
-
-Start with the command shape as written:
+Use Node.js 22.12+. Copy `configs/claude_desktop_config.example.json` into your
+Claude Desktop MCP configuration and replace the absolute path placeholder with your
+checkout's `gateway.mjs` path. Use an absolute Node executable path as well if
+your client cannot find `node` in PATH.
 
 ```json
 {
   "mcpServers": {
     "agentpay": {
-      "command": "npx",
-      "args": ["-y", "agentpay-mcp"]
+      "command": "node",
+      "args": [
+        "/ABSOLUTE/PATH/agentpay-wallet-starter/examples/coding-agent-bridge/gateway.mjs"
+      ]
     }
   }
 }
 ```
 
-Use `configs/policy.example.json` as your starter guardrail model.
+The gateway defaults to a no-funds mock. It exposes only `get_wallet_info` and
+`x402_pay`, with exact endpoint and payee allowlists, caps and a persistent local
+budget. Ask for a simulated request to `https://merchant.example/paid-weather`
+with `max_payment_eth` set to `"0.18"`; then verify that an unknown endpoint or
+`"0.65"` request is blocked. The stdio gateway denies above-threshold payments
+because model messages cannot supply human approval.
 
-Important: this policy file shape is validated in the controlled paid-tool demo in this repo. It is not yet documented here as a direct runtime env contract for the current `agentpay-mcp` server.
+For any live use, follow the separate operator checkpoint and environment
+contract in [the bridge README](../examples/coding-agent-bridge/README.md).
+Replace the mock merchant/payee and review wallet limits first. Do not put keys
+in tracked client configs. All clients using the same live wallet must share the
+persistent audit/budget directory.
 
-## Recommended order
-
-1. Run `bash scripts/verify-starter.sh` first.
-2. Review `configs/policy.example.json` so your allow, approve, and block boundaries are explicit.
-3. Start with low spend caps when you create the wallet or set spend limits through the MCP tools.
-4. Confirm one allowed path and one blocked or approval path.
-5. Only then point Claude Desktop at your real paid endpoint flow.
-
-## What success looks like
-
-- Claude can see the MCP server
-- paid actions stay inside your policy boundary
-- you can explain which part comes from the MCP server and which part comes from the wallet engine
-
-## Common mistake
-
-Do not treat the Claude config as the source of payment policy. The client config only points to the MCP server. The payment boundary still belongs to the wallet-backed layer and the spend limits you enforce through the wallet flow.
+`configs/policy.example.json` belongs to the USD simulator and is consumed only
+with its `--policy` flag. The bridge uses its own `policy.example.json` shape and
+USDC strings; client registration alone does not configure payment policy.

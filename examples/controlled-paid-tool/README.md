@@ -33,7 +33,7 @@ From the starter repo root:
 
 ```bash
 node examples/controlled-paid-tool/run_demo.js allowed
-NEMOCLAW_AUTO_APPROVE=yes node examples/controlled-paid-tool/run_demo.js approval
+npm run demo:approval
 node examples/controlled-paid-tool/run_demo.js blocked
 ```
 
@@ -75,6 +75,11 @@ Each run writes:
 - `artifacts/latest-run.json` for the most recent run summary
 - `artifacts/run_*.json` for per-run summaries
 
+Failures exit nonzero, append `run.failed` and replace the latest summary with
+`outcome: "run_failed"`, preserving any simulated receipt. Summary replacements
+are atomic. If evidence cannot be written, the command reports failure and never
+attempts another settlement.
+
 The validation command also writes per-scenario transcripts and summaries under:
 
 - `artifacts/validation/`
@@ -83,8 +88,16 @@ The validation command also writes per-scenario transcripts and summaries under:
 
 - `demo.config.json` defines the tool, thresholds, and scenario prices
 - `run_demo.js` runs the local agent/payment-control loop
-- `validate_demo.js` proves the three required policy states end to end
+- `validate_demo.js` proves the three policy states plus explicit, unset and
+  unrecognized approval denial, with receipt linkage and ordered audit assertions
 - `lib/` contains the policy, approval, audit, and simulator modules
+
+The default policy is embedded in `demo.config.json`. Pass
+`--policy configs/policy.example.json` from the repo root to override it.
+Amounts and thresholds must be finite nonnegative numbers; tool allowlists must
+be arrays of strings. Config, scenario input and flags are validated before a
+challenge or settlement. Terminal approval accepts exact `y` or `yes`.
+`NEMOCLAW_AUTO_APPROVE` is a simulator convenience and never authorizes the bridge.
 
 ## Why this exists
 

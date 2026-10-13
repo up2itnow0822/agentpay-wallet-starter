@@ -1,115 +1,128 @@
-# Coding-agent bridge
+# Guarded coding-agent bridge
 
-This example shows how to plug `agentpay-mcp` into the OpenAI Agents SDK so an agent can:
+This optional example uses the pinned OpenAI Agents SDK and a local stdio MCP
+server. The default smoke uses a deterministic model and a mock payment server:
+no OpenAI API key, RPC request, wallet, or real payment is needed.
 
-- discover payment tools over MCP
-- keep local wallet custody with `agentwallet-sdk`
-- gate paid calls behind approval and spend policy
-- preserve OpenAI-native sessions, guardrails, and tracing
+## Install and verify
 
-## Why this exists
-
-This is the second lane inside `agentpay-wallet-starter`.
-
-OpenAI's updated agent stack now gives developers most of the harness they need: MCP server tools, sessions, guardrails, Codex CLI, sandbox execution, `AGENTS.md`, and shell-style workflows. What it still does not ship is a native payment primitive.
-
-That leaves a gap right where real agents hit one. An agent can reason, call tools, and write code, but it still needs a safe way to pay for premium APIs, MCP tools, data feeds, and operator-approved actions.
-
-This bridge fills that gap with three layers:
-
-1. `@openai/agents` for orchestration
-2. `agentpay-mcp` for the payment tool surface
-3. `agentwallet-sdk` for non-custodial signing and spend controls
-
-## Files
-
-- `agent.ts` - minimal OpenAI Agents SDK integration
-- `AGENTS.md` - repository policy the coding agent can read before it edits or pays
-- `websocket-control-points.md` - where approval gates, spend limits, and x402 checkpoints sit in a persistent Responses API loop
-
-## Install
-
-From this example directory:
+Use Node.js 22.12+ (the locked OpenAI client requires Node 22 and the pinned
+server needs enabled `require(esm)`). From this example directory:
 
 ```bash
-npm install @openai/agents zod agentpay-mcp agentwallet-sdk tsx
+npm ci --ignore-scripts
+npm run typecheck
+npm test
+npm run smoke
 ```
 
-## Environment
+The smoke exercises the actual SDK tool dispatch and its input guard. Tests also
+bootstrap the pinned AgentPay server without making paid calls. Dependencies are
+locked here separately from the dependency-free root simulator.
 
-```bash
-export OPENAI_API_KEY=sk-...
-export BASE_RPC_URL=https://mainnet.base.org
-export BASE_PRIVATE_KEY=0x...
-export AGENTPAY_MAX_USDC_PER_TX=1
-export AGENTPAY_MAX_USDC_PER_DAY=5
-```
+## Enforced payment boundary
 
-Use a low-cap wallet for demos. Raise limits only after you have alerts and review in place.
+The model sees only `get_wallet_info` and `x402_pay`. The SDK input guard rejects
+invalid requests before dispatch; the MCP adapter repeats authorization so direct
+MCP calls cannot bypass it. Policy is installed and its echoed values verified
+before any tool is available. Policy, transfer, swap and session mutation tools
+are unavailable to the model.
 
-## Run
+`policy.example.json` is a mock template. A reviewed live policy must contain:
 
-From this example directory:
-
-```bash
-npx tsx agent.ts
-```
-
-## What the bridge maps cleanly
-
-| OpenAI primitive | What we attach |
+| Field | Contract |
 | --- | --- |
-| MCP server tools | `agentpay-mcp` over stdio |
-| Sessions / working memory | OpenAI session state plus payment receipts in your app logs |
-| Guardrails / approval | OpenAI approval flow plus `agentwallet-sdk` spending policy |
-| Codex + `AGENTS.md` | repo-level payment policy, file hygiene, and approval rules |
-| Shell / sandbox work | local code edits stay in the harness, funds stay in the wallet layer |
+| `allowedEndpoints` | Nonempty list of exact HTTPS URLs, including path and query |
+| `allowedRecipients` | Permitted nonzero EVM payees, including the explicit live protocol fee collector |
+| `maxUsdcPerTx` | Positive maximum **total USDC debit**, up to six decimals |
+| `maxUsdcPerDay` | Total USDC safety budget at least as large as the transaction cap |
+| `approvalThresholdUsdc` | Decimal USDC string between zero and the transaction cap |
 
-## Architecture
+Only GET requests and USDC on the configured Base chain are supported. Arbitrary
+headers, bodies, session overrides and other assets are rejected. The pinned
+server's legacy `max_payment_eth` argument represents the requested maximum
+**total USDC debit** at this bridge's boundary. In live mode the adapter forwards
+a smaller merchant principal cap so principal plus the pinned SDK's separate
+0.77% protocol fee fits that total. Live startup fails unless the reviewed policy
+explicitly includes fee collector `0xff86829393C6C26A4EC122bE0Cc3E466Ef876AdD`;
+the adapter never adds a payee silently. Mock mode has no protocol fee.
+The child verifies the pinned fee constants/math at startup. Actual challenge
+principal and merchant are checked by the installed server policy before signing.
+The server's exclusive draft threshold is one nine-decimal policy unit above the
+inclusive host cap; the host and forwarded request remain bounded. Its HTTP fetch is
+restricted to exact approved endpoints and the configured RPC; redirects block.
+This is an application control, not an operating-system network sandbox.
 
-```text
-OpenAI Agent
-  -> MCP call
-  -> agentpay-mcp
-  -> agentwallet-sdk
-  -> x402 challenge / payment proof
-  -> paid API or paid MCP tool
+The host reserves each request's full maximum before dispatch, under an exclusive
+file lock. `bridge-budget.json` persists a rolling 24-hour budget across restarts
+and both live entry points. Reservations remain even if a request is free, fails,
+is replayed or spends less than its bound. Unknown outcomes never refund
+automatically. Authorization requires file and directory sync; storage that cannot
+complete either blocks the call. A corrupt ledger or held lock blocks payments; reconcile receipts
+before any manual recovery. Keep this directory persistent, private and shared
+by every client using the wallet. Separate clones, deleted ledgers or other wallet
+clients do not share this local cap. Wallet-level spend controls remain necessary;
+gas costs are outside the USDC cap.
+
+## Live agent: separate human checkpoint
+
+Run the no-funds checks first. Deploy and review your own compatible wallet and
+on-chain limits separately, and replace the example merchant/payee. Configure
+secrets locally; never commit them.
+
+| Variable | Use |
+| --- | --- |
+| `OPENAI_API_KEY` | Parent OpenAI agent only; never forwarded to the payment child |
+| `AGENT_PRIVATE_KEY` | Valid EVM signer key; explicitly forwarded to the payment child |
+| `AGENT_WALLET_ADDRESS` | Your deployed compatible wallet address |
+| `CHAIN_ID` | `84532` (Base Sepolia, default) or `8453` (Base) |
+| `RPC_URL` | HTTPS RPC endpoint; defaults to the matching Base endpoint |
+| `AGENTPAY_POLICY_PATH` | Absolute path to the reviewed bridge policy JSON |
+| `AGENTPAY_ENABLE_LIVE` | Exact `yes`, set only after the separate human review |
+
+```bash
+npm start -- --live
 ```
 
-## When to use this lane
+Startup shows the chain, wallet and caps and requires the typed phrase
+`enable live payments` in an interactive terminal. Above-threshold requests need
+an exact `y` or `yes` approval. Caps cannot be overridden by approval.
+`NEMOCLAW_AUTO_APPROVE` applies only to the root simulator, never this bridge.
 
-Use this after the controlled paid-tool example works and you want to see the same payment boundary inside an MCP-client workflow.
+## Claude, Cursor and OpenClaw
 
-## What to ship first
+The three configs under `../../configs/` launch the local `gateway.mjs`; replace
+the absolute path placeholder after installing this package. The gateway defaults
+to mock mode and needs no OpenAI API key. It exposes the same two guarded tools.
+Its stdio channel carries MCP messages, so it always denies requests above the
+approval threshold rather than treating model text as human consent.
 
-If you are turning this into a production path, ship in this order:
+Live gateway startup additionally requires `AGENTPAY_MODE=live` and
+`AGENTPAY_OPERATOR_ACK=reviewed-policy-and-wallet`, set by the operator only after
+reviewing the wallet, merchant, policy and persistent audit directory. The live
+variables above apply except `OPENAI_API_KEY`. Do not put keys in tracked configs.
+An unattended gateway cannot approve larger payments; use the interactive agent
+for that checkpoint.
 
-1. local stdio MCP server with tiny spend caps
-2. approval for any transfer above your default threshold
-3. allowlist of merchants or API domains
-4. receipt logging for every paid call
-5. policy tests for reject, approve, and cap-exceeded cases
+## Evidence and limits
 
-## WebSocket mode: where the controls sit
+Evidence stays in the ignored `../controlled-paid-tool/artifacts/` directory.
+`bridge-audit.jsonl` records total, principal and fee bounds, the authorized
+recipients, approval decisions, reservations and merchant receipt identifiers
+linked to each reservation. Receipts are parsed only
+from trusted server narration, with policy-bound amount and payee checks;
+merchant response bodies cannot supply receipt evidence. Errors return blockers
+and retain the safety reservation for reconciliation.
 
-OpenAI's Apr 22 engineering post explains that WebSocket mode keeps connection-scoped response state in memory and lets follow-up calls reuse `previous_response_id` instead of rebuilding the full conversation each turn.
+The pinned server does not return a separate protocol-fee transaction hash.
+Fee amounts associated with a merchant receipt are derived from the verified
+fee rule; reconcile the wallet's transactions for fee-only or uncertain failures.
+Do not interpret a calculated fee amount as independent chain receipt evidence.
 
-That reduces latency. It does not remove the money boundary.
+These checks prove local authorization, configuration and simulated receipt
+handling. They do not prove funded settlement, chain finality or the security of
+the upstream wallet contract. Live validation requires the separate human review
+and a deliberately low-cap wallet.
 
-When you adapt this bridge to a persistent Responses API loop, keep the checkpoints in this order:
-
-1. Open the WebSocket connection and send the first `response.create`.
-2. Let the model plan work and emit a paid tool call or a paid HTTP step.
-3. Before any funds move, check merchant allowlist, per-tx cap, daily cap, and approval threshold.
-4. Use `agentpay-mcp` plus `agentwallet-sdk` to satisfy the x402 challenge only if policy allows it.
-5. Log quote amount, payee, approval state, and receipt id.
-6. Continue the conversation with a follow-up `response.create` that references `previous_response_id` and includes the paid tool result.
-7. Fail closed on malformed challenges, unknown merchants, or cap-exceeded retries.
-
-The companion note in `websocket-control-points.md` shows the control path in more detail.
-
-## Source notes
-
-- OpenAI Agents SDK overview: https://openai.github.io/openai-agents-js/
-- OpenAI MCP guide: https://openai.github.io/openai-agents-js/guides/mcp/
-- Codex CLI overview: https://developers.openai.com/codex/cli/
+SDK references: [MCP](https://openai.github.io/openai-agents-js/guides/mcp/)
+and [tool guardrails](https://openai.github.io/openai-agents-js/guides/guardrails/).

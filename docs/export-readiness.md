@@ -11,8 +11,8 @@ This starter repo is now strong enough for internal review and external packagin
 - client setup docs exist for Claude Desktop, Cursor, and OpenClaw
 - the controlled paid-tool lane is copied from a validated source example
 - repo-level `LICENSE` and `CONTRIBUTING.md` now exist
-- `scripts/verify-starter.sh` passes
-- `scripts/export-check.sh` exists
+- `npm test` passes
+- `npm run export:check` exists
 - standalone git history is initialized in this repo copy
 
 ## Still worth cleaning before public export

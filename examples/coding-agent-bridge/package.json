@@ -1,0 +1,25 @@
+{
+  "name": "agentpay-starter-coding-bridge",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "start": "node --import tsx agent.ts",
+    "test": "node --import tsx --test bridge.test.ts runtime.test.ts gateway.test.mjs pinned-policy.test.mjs",
+    "smoke": "node --import tsx smoke.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.31.0",
+    "@openai/agents": "0.20.0",
+    "agentpay-mcp": "4.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.15",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}

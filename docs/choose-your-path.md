@@ -4,7 +4,7 @@
 
 Use `agentpay-wallet-starter` if your goal is to:
 - understand how the SDK and MCP server fit together
-- run a real paid-tool example first
+- run a no-funds paid-tool simulation first
 - adapt the policy or endpoint after first success
 
 ## Use Agent Wallet SDK directly if
