@@ -23,13 +23,17 @@ Check that the docs still match the repo surface:
 Run:
 
 ```bash
-bash scripts/verify-starter.sh
+npm test
 ```
 
 If you change the controlled paid-tool example, keep the three required outcomes intact:
 - allowed
 - approval required
 - blocked
+
+Also preserve denial, malformed-input rejection, failed-run receipts and ordered
+audit evidence. For bridge changes run its `npm ci --ignore-scripts`,
+`npm run typecheck`, `npm test` and `npm run smoke` without funds or API calls.
 
 ## Pull request checklist
 

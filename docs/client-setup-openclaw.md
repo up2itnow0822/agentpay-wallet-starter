@@ -1,44 +1,43 @@
 # OpenClaw setup
 
-Use this after the controlled paid-tool example works.
+Run root `npm test` first. Then install and verify the guarded MCP bridge:
 
-## Goal
+```bash
+cd examples/coding-agent-bridge
+npm ci --ignore-scripts
+npm run typecheck
+npm test
+npm run smoke
+```
 
-Register `agentpay-mcp` as an MCP server in OpenClaw without blurring where the payment policy lives.
-
-## Start from
-
-- `configs/openclaw_mcp.example.json`
-
-## Example shape
+Use Node.js 22.12+. Copy `configs/openclaw_mcp.example.json` into your
+OpenClaw MCP configuration and replace the absolute path placeholder with your
+checkout's `gateway.mjs` path. Use an absolute Node executable path as well if
+your client cannot find `node` in PATH.
 
 ```json
 {
   "name": "agentpay",
-  "command": "npx",
-  "args": ["-y", "agentpay-mcp"]
+  "command": "node",
+  "args": [
+    "/ABSOLUTE/PATH/agentpay-wallet-starter/examples/coding-agent-bridge/gateway.mjs"
+  ]
 }
 ```
 
-Use `configs/policy.example.json` as your starter guardrail model.
+The gateway defaults to a no-funds mock. It exposes only `get_wallet_info` and
+`x402_pay`, with exact endpoint and payee allowlists, caps and a persistent local
+budget. Ask for a simulated request to `https://merchant.example/paid-weather`
+with `max_payment_eth` set to `"0.18"`; then verify that an unknown endpoint or
+`"0.65"` request is blocked. The stdio gateway denies above-threshold payments
+because model messages cannot supply human approval.
 
-Important: this policy file shape is validated in the controlled paid-tool demo in this repo. It is not yet documented here as a direct runtime env contract for the current `agentpay-mcp` server.
+For any live use, follow the separate operator checkpoint and environment
+contract in [the bridge README](../examples/coding-agent-bridge/README.md).
+Replace the mock merchant/payee and review wallet limits first. Do not put keys
+in tracked client configs. All clients using the same live wallet must share the
+persistent audit/budget directory.
 
-## Recommended order
-
-1. Verify the starter lane locally.
-2. Register the MCP server in OpenClaw.
-3. Review `configs/policy.example.json` so your allow, approve, and block boundaries are explicit.
-4. Keep wallet limits on a low-risk profile.
-5. Test one allowed path and one blocked or approval path.
-6. Move to a real paid endpoint only after both behaviors are visible.
-
-## What success looks like
-
-- OpenClaw can invoke the MCP server
-- the spend limits and approval boundary stay explicit
-- you can trace the flow from client to MCP server to wallet-backed payment layer
-
-## Common mistake
-
-Do not assume OpenClaw owns the money boundary. It owns the client side. The actual payment boundary still sits behind the MCP layer in the wallet flow and spend limits you configure.
+`configs/policy.example.json` belongs to the USD simulator and is consumed only
+with its `--policy` flag. The bridge uses its own `policy.example.json` shape and
+USDC strings; client registration alone does not configure payment policy.

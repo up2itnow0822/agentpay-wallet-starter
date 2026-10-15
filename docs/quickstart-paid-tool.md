@@ -16,13 +16,17 @@ Use Node 20 or newer.
 From repo root:
 
 ```bash
-bash scripts/verify-starter.sh
+npm test
 ```
 
-This runs the validation harness in `examples/controlled-paid-tool/validate_demo.js` and checks:
+This runs root regressions and the evidence harness in
+`examples/controlled-paid-tool/validate_demo.js`, checking:
 - allowed payment completes
 - approval-required payment completes when auto-approved
 - blocked payment stops before settlement
+- denied, unset and unrecognized approval stop before settlement
+- receipts, result IDs, effective policy and ordered audit events agree
+- malformed config, inherited scenario names and failed runs fail closed
 
 ## Run scenarios one by one
 
@@ -42,7 +46,7 @@ Expected outcome:
 ### Approval required
 
 ```bash
-NEMOCLAW_AUTO_APPROVE=yes node examples/controlled-paid-tool/run_demo.js approval
+npm run demo:approval
 ```
 
 Expected outcome:
@@ -78,6 +82,17 @@ Change one thing at a time:
 - tool input
 
 Then rerun the scenario that best matches your use case.
+
+To override the embedded policy with the standalone example:
+
+```bash
+node examples/controlled-paid-tool/run_demo.js allowed --policy configs/policy.example.json
+```
+
+Unknown or incomplete flags fail. All prices are finite nonnegative USD numbers;
+the tool remains a local simulation. A failed run exits nonzero and writes a
+failed summary and terminal audit event, retaining any simulated receipt already
+obtained. Do not interpret an older successful run as the result of a failure.
 
 ## What to record
 

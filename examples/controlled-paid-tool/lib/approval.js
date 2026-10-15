@@ -40,7 +40,7 @@ async function requestApproval({ toolName, amountUsd, reason }) {
     const answer = await rl.question(
       `Approval required for ${toolName} at $${amountUsd.toFixed(2)}. ${reason} Approve payment? [y/N] `
     );
-    const approved = answer.trim().toLowerCase().startsWith('y');
+    const approved = parseTerminalApproval(answer);
     return {
       approved,
       mode: 'terminal_prompt',
@@ -52,6 +52,11 @@ async function requestApproval({ toolName, amountUsd, reason }) {
   }
 }
 
+function parseTerminalApproval(value) {
+  return typeof value === 'string' && ['y', 'yes'].includes(value.trim().toLowerCase());
+}
+
 module.exports = {
   requestApproval,
+  parseTerminalApproval,
 };

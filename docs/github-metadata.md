@@ -44,4 +44,4 @@ Leave blank for now.
 
 Start here if you want the shortest path to run `agentpay-mcp` and `agentwallet-sdk` together.
 
-The first proof lane is the controlled paid-tool example. Run `bash scripts/export-check.sh` or `bash scripts/verify-starter.sh`, then adapt the policy and endpoint to your own flow.
+The first proof lane is the controlled paid-tool example. Run `npm run export:check` or `npm test`, then adapt the policy and endpoint to your own flow.

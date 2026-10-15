@@ -1,8 +1,10 @@
 {
   "mcpServers": {
     "agentpay": {
-      "command": "npx",
-      "args": ["-y", "agentpay-mcp"]
+      "command": "node",
+      "args": [
+        "/ABSOLUTE/PATH/agentpay-wallet-starter/examples/coding-agent-bridge/gateway.mjs"
+      ]
     }
   }
 }

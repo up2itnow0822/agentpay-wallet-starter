@@ -1,8 +1,6 @@
-# Policy example
+# Simulator and bridge policy
 
-This repo ships one validated starter policy example:
-
-- `configs/policy.example.json`
+The dependency-free simulator uses this USD policy shape:
 
 ```json
 {
@@ -12,56 +10,30 @@ This repo ships one validated starter policy example:
 }
 ```
 
-## What this shape is
-
-This is the exact policy shape used by the controlled paid-tool example in this repo.
-
-It proves three states:
-- allowed
-- approval required
-- blocked
-
-Those behaviors are validated by:
-- `examples/controlled-paid-tool/validate_demo.js`
-- `scripts/verify-starter.sh`
-
-## What each field means
-
-- `allowedTools`: which tool names are allowed to request payment at all
-- `approvalThresholdUsd`: amounts above this require approval
-- `hardCapUsd`: amounts above this are blocked
-
-## Important boundary
-
-This file is a validated starter policy example for the controlled demo and a good way to think about your first guardrails.
-
-It is not currently a verified drop-in runtime config contract for the shipped `agentpay-mcp` server.
-
-What is verified today:
-- the controlled demo consumes this JSON shape directly
-- the current `agentpay-mcp` server exposes spend controls through wallet creation and spend-limit tools such as `createWallet` and `setSpendLimit`
-
-So use this file in two ways:
-1. as the exact policy file for the controlled paid-tool example in this repo
-2. as the starter model for the limits and approval rules you want to preserve when you move into a real MCP-client flow
-
-## How to adapt it
-
-Change one thing at a time:
-- tool allowlist
-- approval threshold
-- hard cap
-
-Then rerun:
+By default it consumes `examples/controlled-paid-tool/demo.config.json.policy`.
+To use `configs/policy.example.json` as the actual policy, pass it explicitly:
 
 ```bash
-bash scripts/verify-starter.sh
+node examples/controlled-paid-tool/run_demo.js allowed --policy configs/policy.example.json
 ```
 
-Or run a single scenario:
+`--policy` replaces the embedded policy. `allowedTools` must be an array of exact
+tool-name strings; an empty array denies all tools. Amounts and limits must be
+finite nonnegative numbers, with approval threshold at or below the hard cap.
+Equality with the approval threshold allows; equality with the hard cap requires
+approval when above the threshold. Invalid input fails before settlement.
 
-```bash
-node examples/controlled-paid-tool/run_demo.js allowed
-NEMOCLAW_AUTO_APPROVE=yes node examples/controlled-paid-tool/run_demo.js approval
-node examples/controlled-paid-tool/run_demo.js blocked
-```
+Change the file, rerun with `--policy`, and inspect `latest-run.json.policy` to
+verify the effective values. Root `npm test` checks overrides, malformed input,
+cap boundaries and approval denial alongside the six scenario evidence checks.
+
+The optional bridge uses a separate host policy:
+`examples/coding-agent-bridge/policy.example.json`. It has exact HTTPS endpoint
+and recipient allowlists and **decimal USDC strings** for transaction, 24-hour
+and approval caps. It installs verified server spend controls before exposing
+tools, enforces its own persistent safety budget, and prevents model policy
+mutation. The simulator policy is not a bridge or raw AgentPay server config.
+
+Follow [the bridge README](../examples/coding-agent-bridge/README.md) for its
+enforced configuration and separate live checkpoint. Approval never overrides
+the bridge's caps, and the generic client gateway denies above-threshold calls.

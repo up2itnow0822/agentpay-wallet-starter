@@ -8,7 +8,7 @@
 - [x] LICENSE exists
 - [x] CONTRIBUTING.md exists
 - [x] standalone local git history exists
-- [x] `bash scripts/export-check.sh` passes
+- [x] `npm run export:check` passes
 
 ## Remote creation settings
 

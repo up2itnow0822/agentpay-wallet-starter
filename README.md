@@ -2,8 +2,9 @@
 
 AgentPay MCP plus Agent Wallet SDK, one clear starter path.
 
-`agentpay-wallet-starter` shows how to use `agentwallet-sdk` and `agentpay-mcp`
-together in one real paid-tool flow.
+`agentpay-wallet-starter` starts with a local, no-funds paid-tool simulator.
+An optional guarded bridge exercises the OpenAI Agents SDK and MCP tool dispatch
+with a mock payment server, then provides an explicitly opted-in live adapter.
 
 Use this repo when you want the fastest path to first success with both pieces
 of the stack:
@@ -29,8 +30,8 @@ This scaffold already includes one runnable first-success lane:
 
 - `examples/controlled-paid-tool/` copied from the real AgentPay MCP example
   surface
-- `scripts/verify-starter.sh` to validate allowed, approval, and blocked
-  outcomes
+- `npm test` to verify policy, approvals, receipt linkage, ordered audit evidence,
+  invalid inputs, failure recovery and mutations of the safety boundaries
 
 It also includes two next lanes:
 
@@ -46,16 +47,16 @@ npm ci
 npm test
 ```
 
-`npm test` runs the allowed, approval-required, and blocked policy scenarios in
-simulated mode. It writes local audit evidence under
+Use Node.js 20+; root verification works without Bash. `npm test` runs root
+regressions and six approval/policy scenarios in simulated mode. It writes evidence under
 `examples/controlled-paid-tool/artifacts/` and never moves real funds.
 
 Run an individual scenario after the verification passes:
 
 ```bash
-node examples/controlled-paid-tool/run_demo.js allowed
-NEMOCLAW_AUTO_APPROVE=yes node examples/controlled-paid-tool/run_demo.js approval
-node examples/controlled-paid-tool/run_demo.js blocked
+npm run demo:allowed
+npm run demo:approval
+npm run demo:blocked
 ```
 
 Then adapt the path:
@@ -63,6 +64,28 @@ Then adapt the path:
 - change policy values in `examples/controlled-paid-tool/demo.config.json`
 - rerun the scenario that matches your use case
 - record what changed and why
+
+To use the standalone policy file explicitly:
+
+```bash
+node examples/controlled-paid-tool/run_demo.js allowed --policy configs/policy.example.json
+```
+
+For the optional MCP lane, use Node.js 22.12+ and its locked package:
+
+```bash
+cd examples/coding-agent-bridge
+npm ci --ignore-scripts
+npm run typecheck
+npm test
+npm run smoke
+```
+
+This smoke uses the real SDK with a deterministic model and simulated receipts.
+Live payments require the separate human checkpoint described in the bridge
+README. Client configs launch its local guarded gateway in mock mode by default.
+The required CI `build` check depends on root checks on Node 20/22
+and bridge checks on Node 22/24; every matrix job must succeed.
 
 ## How the pieces fit together
 
@@ -73,7 +96,7 @@ This stack has three layers.
 - `agentpay-mcp` is the MCP server. It exposes that engine to agent clients
   through MCP tools.
 - `agentpay-wallet-starter` is the onboarding lane. It shows how to run both
-  together in real example flows.
+  together in simulated examples and the optional guarded MCP bridge.
 
 This repo does not replace either package. It makes the relationship easy to run
 and easy to understand.
@@ -123,8 +146,8 @@ agentpay-wallet-starter/
     cursor_mcp.example.json
     openclaw_mcp.example.json
   scripts/
-    setup.sh
-    verify-starter.sh
+    setup.js
+    verify-starter.js
 ```
 
 ## Success signal

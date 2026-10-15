@@ -1,0 +1,12 @@
+{
+  "allowedEndpoints": [
+    "https://merchant.example/paid-weather"
+  ],
+  "allowedRecipients": [
+    "0x1111111111111111111111111111111111111111",
+    "0xff86829393C6C26A4EC122bE0Cc3E466Ef876AdD"
+  ],
+  "maxUsdcPerTx": "1",
+  "maxUsdcPerDay": "5",
+  "approvalThresholdUsdc": "0.25"
+}
