@@ -1,3 +1,6 @@
+> [!WARNING]
+> **Paused for security maintenance. Do not use in production.**
+
 # agentpay-wallet-starter
 
 AgentPay MCP plus Agent Wallet SDK, one clear starter path.
